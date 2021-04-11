@@ -2,7 +2,7 @@ import os
 import argparse
 from sys import platform
 
-version = '1.1 (04.2021)'
+version = '1.2 (04.2021)'
 
 # ---------------------------------- Selecting a special letter for the current OS -------------------------------------
 if platform == "linux" or platform == "linux2":
@@ -36,7 +36,7 @@ def search(path, extension):
         return count
     except OSError:
         print('Wrong direction')
-        return 0
+        return count
 
 
 # -------------------------------------------------- Row count function ------------------------------------------------
@@ -48,6 +48,7 @@ def counter(path):
                 count += 1
     except UnicodeDecodeError:
         print('File read error. Check if a file extension is valid')
+        return count
     else:
         if args.n or args.full:
             return count
