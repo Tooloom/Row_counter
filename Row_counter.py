@@ -1,37 +1,45 @@
 import os
 import argparse
+from sys import platform
 
-version = '1.0 (04.2021)'
+version = '1.1 (04.2021)'
 
+# ---------------------------------- Selecting a special letter for the current OS -------------------------------------
+if platform == "linux" or platform == "linux2":
+    sp_letter = '/'
+elif platform == "darwin" or platform == "win32":
+    sp_letter = '\\'
 
-# ----------------------------------------- Подготовка парсера аргументов ----------------------------------------------
+# ------------------------------------------------ Preparing parser ----------------------------------------------------
 parser = argparse.ArgumentParser()
 
 parser.add_argument('-e', type=str, help='File extension', default=False)
-parser.add_argument('-d', '--dir', help='Searching direction', default=os.getcwd())
+parser.add_argument('-d', '--direction', help='Searching direction', default=os.getcwd())
 parser.add_argument('-n', help='Enable file counter', action='store_true')
+parser.add_argument('-f', '--full', help='Enable summarize lines counts', action='store_true')
 parser.add_argument('-v', help='Show program version', action='store_true')
 
 args = parser.parse_args()
 
 
-# --------- Поиск файлов с указанным расширением с последующей передайчей их в функцию для поиска кол-ва строк ---------
+# -------------------------- Searching files with given extension to send them to row count function -------------------
 def search(path, extension):
-    count = 0
+    count = [0, 0]
     try:
         for i in os.listdir(path):
-            if os.path.isdir(path + '\\' + i):
-                count += search(path + '\\' + i, args.e)
+            if os.path.isdir(path + sp_letter + i):
+                temp = search(path + sp_letter + i, args.e)
+                count = [x + y for x, y in zip(count, temp)]
             elif i.split('.')[-1] == extension:
-                count += 1
-                counter(path + '\\' + i)
+                count[0] += 1
+                count[1] += counter(path + sp_letter + i)
         return count
     except OSError:
-        print('Ошибка в указании пути.')
+        print('Wrong direction')
         return 0
 
 
-# -------------------------------------------- Функция по поиску кол-ва строк ------------------------------------------
+# -------------------------------------------------- Row count function ------------------------------------------------
 def counter(path):
     count = 0
     try:
@@ -39,20 +47,26 @@ def counter(path):
             for _ in file:
                 count += 1
     except UnicodeDecodeError:
-        print('Ошибка при чтении. Проверьте корректность введённых данных.')
+        print('File read error. Check if a file extension is valid')
     else:
-        print(f'Direction: {path}, lines:{count}')
+        if args.n or args.full:
+            return count
+        else:
+            print(f'Direction: {path}, lines:{count}')
+            return count
 
 
 # -------------------------------------------------------- Main --------------------------------------------------------
 def main():
     if args.v:
-        print(f'Row_counter version: {version}')
+        print(f'Row_counter version: [ {version} ]')
     elif args.e:
         if args.n:
-            print(f'Найденных файлов с расширением {args.e}: ', search(args.dict, args.e))
+            print(f'Founded files with extension [{args.e}]: {search(args.direction, args.e)[0]}')
+        if args.full:
+            print(f'Total lines in files with extension [{args.e}]: {search(args.direction, args.e)[1]}')
         else:
-            search(args.dir, args.e)
+            search(args.direction, args.e)
     else:
         print('Error: the following arguments are required: -e\n[-h] for help')
 
