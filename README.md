@@ -1,5 +1,5 @@
 # Row_counter
-This is Python console program to count lines in files
+This is a Python console program to count lines in files
 # Usage
 - Just start the file
 - You can use special commands:<br>
